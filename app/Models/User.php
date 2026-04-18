@@ -72,7 +72,7 @@ class User extends Authenticatable
             return true;
         }
 
-        return $this->tyroRoleSlugs()->contains('super-admin');
+        return in_array('super-admin', $this->tyroRoleSlugs(), true);
     }
 
     public function isReseller(): bool
