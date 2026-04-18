@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ProductType;
+use HasinHayder\TyroDashboard\Concerns\HasCrud;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +11,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasCrud, HasFactory, SoftDeletes;
+
+    /** @var list<string> */
+    protected array $resourceRoles = ['super-admin', 'admin'];
 
     protected $fillable = [
         'code',
