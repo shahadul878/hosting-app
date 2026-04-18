@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\AccountStatus;
 use App\Enums\MvpRole;
-use Database\Factories\UserFactory;
 use HasinHayder\Tyro\Concerns\HasTyroRoles;
 use HasinHayder\TyroLogin\Traits\HasTwoFactorAuth;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,11 +11,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, HasTyroRoles, HasTwoFactorAuth, Notifiable;
+    use HasApiTokens, HasFactory, HasTwoFactorAuth, HasTyroRoles, Notifiable;
 
     /**
      * @var list<string>
@@ -88,5 +88,23 @@ class User extends Authenticatable
     public function isClient(): bool
     {
         return $this->mvp_role === MvpRole::Client;
+    }
+
+    /**
+     * Direct and nested child user ids (does not include this user).
+     *
+     * @return Collection<int, int>
+     */
+    public function subtreeUserIds(): Collection
+    {
+        return once(function (): Collection {
+            $ids = collect();
+            foreach ($this->children()->get() as $child) {
+                $ids->push($child->id);
+                $ids = $ids->merge($child->subtreeUserIds());
+            }
+
+            return $ids->unique()->values();
+        });
     }
 }
